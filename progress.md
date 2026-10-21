@@ -1,0 +1,88 @@
+# Project progress
+
+## 2026-10-21 — Onboard RGB NeoPixel blink
+
+- Updated `GateDriverV2/GateDriverV2.ino` to blink the onboard WS2812 on GPIO48: red, green, and blue, with 500 ms on and 500 ms off for each color.
+- Used the ESP32 core's `rgbLedWrite()` function with brightness 32/255.
+- Verification: compilation passed with ESP32 core 3.3.6, ESP32-S3, 16 MB flash, and OPI PSRAM settings.
+- Upload: successfully flashed on COM3; flash hashes verified and the board reset. LED behavior was not visually verified.
+- Current status: the sketch was subsequently changed to PWM control; the NeoPixel example remains commented out.
+
+## 2026-10-21 — PWM enable through the custom IO library
+
+- Used the custom `IO` class in `GateDriverV2/lib/IO/` to create `IO pwmEnable(PWM_EN, IO_OUTPUT, ACTIVE_HIGH)` in `GateDriverV2/GateDriverV2.ino`.
+- `PWM_EN` is GPIO40. Call `pwmEnable.on()` to enable PWM and `pwmEnable.off()` to disable it.
+- Setup disables PWM during configuration, initializes GPIO38 and GPIO41 for 20 kHz, 8-bit PWM, sets both duty cycles to zero, then enables PWM.
+- Added `GateDriverV2/src/IO.cpp` to compile the existing IO implementation from the sketch's `lib` folder through Arduino's recursive `src` build support.
+- Verification: ESP32-S3 compilation passed (301,823 bytes program storage; 22,764 bytes global variables). `git diff --check` reported no issues.
+- Upload: this PWM version has not been uploaded or tested on hardware.
+
+## 2026-10-21 — Persistent project progress instructions
+
+- User requested progress documentation for every change.
+- Added root `AGENTS.md` with instructions to update this log for every repository change, including affected files, reasons, verification results, upload status, and remaining work.
+- Populated `progress.md` with the changes and verification results from this conversation.
+- Verification: read back both documentation files and checked whitespace with `git diff --check`. No firmware changes in this update.
+- Scope: these persistent instructions apply to this repository in future sessions.
+
+## 2026-10-21 - Requested compilation of current sketch
+
+- Compiled `GateDriverV2/GateDriverV2.ino` using Arduino CLI and the installed ESP32 core, with board settings `esp32:esp32:esp32s3:FlashSize=16M,PSRAM=opi`.
+- Result: compilation passed (exit code 0). Program storage: 301,823 bytes (23% of the configured application partition). Global variables: 22,764 bytes (6%); 304,916 bytes remain for local variables.
+- No firmware source changes were needed. Updated `progress.md` with this verification result.
+- Upload: not performed; hardware behavior has not been verified for this PWM version.
+
+## 2026-10-21 - Compile and upload
+
+- Compiled the current `GateDriverV2/GateDriverV2.ino` for ESP32-S3 with 16 MB flash and OPI PSRAM, using the installed ESP32 core 3.3.12.
+- Compilation passed: program storage 301,907 bytes (23%); global variables 22,764 bytes (6%); 304,916 bytes remain for local variables.
+- Uploaded to ESP32-S3 on COM3. Flash data hashes verified and the board reset successfully. Hardware behavior has not been observed.
+- No firmware source changes were required. Updated `AGENTS.md` to persist the user's completion beep instruction for future agents.
+
+## 2026-10-21 - GPIO14 status LED blink
+
+- Updated `GateDriverV2/GateDriverV2.ino` to include the custom StatusBlink header, create `StatusBlink statusLed`, and initialize it for GPIO14 in setup.
+- Added `statusLed.blink()` in loop. The library counts calls, so speed is set to 1; the existing 1,000 ms loop delay produces approximately one second per LED state. Timing depends on loop execution time.
+- Added `GateDriverV2/src/StatusBlink.cpp` to compile the existing implementation from `lib/StatusBlink`. No custom library changes were needed.
+- Verification: ESP32-S3 compilation passed (302,131 bytes program storage; 22,772 bytes global variables; 304,908 bytes remaining for local variables).
+- Upload: not performed. GPIO14 requires a connected external status LED; hardware behavior has not been verified.
+
+## 2026-10-21 - Upload attempt: board disconnected
+
+- Compiled the current sketch successfully: 302,071 bytes program storage (23%); 22,772 bytes global variables (6%).
+- Upload to COM3 failed because the serial port could not be found. Arduino CLI board detection then reported no boards found.
+- No firmware source changes were made. Upload remains pending until the board is connected and a serial port appears.
+
+
+## 2026-10-21 - Successful upload retry
+
+- Board detected again on COM3. Recompiled the current sketch for ESP32-S3, 16 MB flash and OPI PSRAM: compilation passed, 302,071 bytes program storage (23%) and 22,772 bytes global variables (6%).
+- Upload succeeded on COM3. All written flash data hashes verified, and the board reset successfully.
+- No firmware source changes were made. Hardware LED behavior has not been visually verified. Completion beep sounded.
+
+## 2026-10-21 - Left and right PWM objects
+
+- Updated `GateDriverV2/GateDriverV2.ino` to create `PWM lpwm(L_PWM, 20000, 8)` on GPIO41 and `PWM rpwm(R_PWM, 20000, 8)` on GPIO38.
+- Replaced direct LEDC setup with object begin/off/enable calls. Both outputs start at zero duty. Use setDuty(0-100) or setDutyRaw(0-255) to control each output.
+- Updated `lib/PWM/PWM.cpp` for ESP32 core 3.x: ledcAttachChannel, pin-based ledcWrite, and ledcChangeFrequency. Moved hardware initialization out of the constructor; call begin() in setup, documented in `lib/PWM/PWM.h`.
+- Added `GateDriverV2/src/PWM.cpp` to compile the custom library. Existing status LED settings and PWM enable toggling were preserved.
+- Verification: compilation passed for ESP32-S3, 16 MB flash and OPI PSRAM (302,359 bytes program storage; 22,820 bytes global variables). Whitespace check passed. An optional direct read of the installed core header was denied by filesystem permissions; the actual compiler check passed.
+- Upload: not performed. Hardware behavior remains unverified.
+
+
+## 2026-10-21 - Diagnose missing lpwm signal
+
+- Traced the current sketch and PWM class: setup set lpwm duty to zero using off(), and enable() preserved zero. No later duty command existed, so no pulses were requested.
+- Added lpwm.setDuty(50) in GateDriverV2/GateDriverV2.ino after enabling the PWM objects. Intended test output: GPIO41, 20 kHz, approximately 50% duty. rpwm remains at zero duty.
+- Compilation passed: 302,399 bytes program storage (23%), 22,820 bytes global variables (6%).
+- Not uploaded. The waveform has not been measured; uploading this version will apply nonzero PWM to the connected driver.
+
+
+## 2026-10-21 - Alternate forward and reverse at 20% duty
+
+- Updated GateDriverV2/GateDriverV2.ino: forward uses rpwm at 20% with lpwm off for 2 seconds; reverse uses lpwm at 20% with rpwm off for 2 seconds, repeating continuously.
+- Each direction switch turns off the previous PWM before setting the other output. Removed the setup-only 50% test duty. Frequency remains 20 kHz.
+- Compilation passed: 302,435 bytes program storage (23%); 22,820 bytes global variables (6%). Hardware direction depends on motor wiring and has not been verified.
+- The loop uses blocking 2-second delays; StatusBlink is called once per four-second cycle.
+- Not uploaded. Completion beep sounded.
+
