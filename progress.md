@@ -86,3 +86,27 @@
 - The loop uses blocking 2-second delays; StatusBlink is called once per four-second cycle.
 - Not uploaded. Completion beep sounded.
 
+
+## 2026-10-22 - DS3231 RTC time output
+
+- Updated GateDriverV2/GateDriverV2.ino to include the existing RTC wrapper and create RtcDs3231 rtc. Configured I2C SDA GPIO21 and SCL GPIO47 before initializing the RTC.
+- Added Serial output at 115200 baud: RTC time in HH:MM:SS format once per loop (approximately four seconds with the existing motor delays). Initialization failure and lost-power messages help identify wiring or clock-setting needs. The RTC time is not automatically overwritten.
+- Added GateDriverV2/src/RtcDs3231.cpp so Arduino compiles the existing RTC implementation under lib/RTC.
+- Initial compilation failed because RTClib.h was missing. Installed Adafruit RTClib 2.1.4 in the Arduino library environment; Adafruit BusIO 1.17.4 was already installed.
+- Verification: ESP32-S3 compilation with 16 MB flash and OPI PSRAM passed: 342,903 bytes program storage; 24,292 bytes global variables. git diff --check passed, with only a line-ending conversion notice.
+- Upload: not performed. RTC wiring, serial output, and clock accuracy have not been verified on hardware. If the RTC reports lost power, its date/time still needs to be set.
+
+## 2026-10-22 - Set RTC from current build date and time
+
+- Updated GateDriverV2/GateDriverV2.ino to set the initialized DS3231 using DateTime(__DATE__, __TIME__) and print the resulting full date/time at startup.
+- Confirmed the computer clock uses UTC+05:30 (India time), matching the user's 22 October 2026 screenshot. Build time avoids hardcoding the screenshot's already elapsed minute; upload/startup delay still adds a small clock offset.
+- This is clock-setting firmware: every restart resets the RTC to this build timestamp. Remove the setDateTime call and upload again after setting the clock to preserve battery-backed time across restarts; this limitation is documented beside the call.
+- Verification: compilation passed for ESP32-S3, 16 MB flash and OPI PSRAM: 343,943 bytes program storage; 24,292 bytes global variables. Whitespace check passed with line-ending notices only.
+- Upload: not performed. The physical RTC has not yet been set or checked on hardware. Completion beep sounded.
+
+## 2026-10-22 - Buzzer and calling bell startup test
+
+- Updated GateDriverV2/GateDriverV2.ino with active-high IO objects buzzer on GPIO1 (BZR) and callingBell on GPIO2 (OUT-CALLING-BELL), following the supplied port diagram.
+- Setup initializes both outputs, turns them on together for 500 milliseconds, then turns both off. The test runs once per startup while PWM enable is off, before motor operation begins.
+- Verification: ESP32-S3 compilation with 16 MB flash and OPI PSRAM passed: 344,039 bytes program storage and 24,316 bytes global variables. git diff --check passed with line-ending conversion notices only.
+- Upload: not performed. Physical buzzer sound, bell operation, and active-high wiring have not been verified on hardware. Completion beep sounded.
