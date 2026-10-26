@@ -110,3 +110,10 @@
 - Setup initializes both outputs, turns them on together for 500 milliseconds, then turns both off. The test runs once per startup while PWM enable is off, before motor operation begins.
 - Verification: ESP32-S3 compilation with 16 MB flash and OPI PSRAM passed: 344,039 bytes program storage and 24,316 bytes global variables. git diff --check passed with line-ending conversion notices only.
 - Upload: not performed. Physical buzzer sound, bell operation, and active-high wiring have not been verified on hardware. Completion beep sounded.
+
+## 2026-10-26 - Commit and push current calling bell test
+
+- Reviewed the pending change in GateDriverV2/GateDriverV2.ino: buzzer on/off calls in the repeating loop are commented out; the calling bell continues its existing on/off test. Preserved the user's code as written.
+- Updated progress.md to document this change and the requested Git publication to origin/main.
+- Verification: reviewed the complete pending source diff; git diff --check passed with a line-ending conversion notice. No compilation or hardware testing was performed for this Git-only task.
+- Firmware upload: not performed. Git push is the next operation; its outcome will be verified against the remote branch and reported in the task response.

@@ -66,10 +66,10 @@ void loop() {
 
   // 22222 buzzer /calling bell relay..not operate
 
-   buzzer.on();
-  callingBell.on();
+  //  buzzer.on();
+   callingBell.on();
   delay(1000);
-  buzzer.off();
+  // buzzer.off();
   callingBell.off();
   delay(1000);
 
