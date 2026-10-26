@@ -117,3 +117,5 @@
 - Updated progress.md to document this change and the requested Git publication to origin/main.
 - Verification: reviewed the complete pending source diff; git diff --check passed with a line-ending conversion notice. No compilation or hardware testing was performed for this Git-only task.
 - Firmware upload: not performed. Git push is the next operation; its outcome will be verified against the remote branch and reported in the task response.
+- Git outcome: local commit 7b2ff47 was created successfully after retrying with permission to write Git metadata. The initial sandboxed staging/commit attempt failed with index.lock permission denied.
+- Push blocked: automatic approval review rejected publication to https://github.com/sudipchakraborty/SMART-HOME-GATE-Arduino--V2.0-.git because it considers that destination unverified for private-project egress. No push was executed. Explicit approval of this exact destination is needed before retrying.
